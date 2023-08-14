@@ -1,0 +1,88 @@
+#!/bin/sh
+
+# Setup_CodeLint.sh
+# 自动配置CodeLint
+
+# 要调用的ruby脚本
+ruby_script_name="Set_CodeLint_Target.rb"
+
+## 颜色定义
+RedColor='\033[31m'  #红色
+GreenColor='\033[32m'  #绿色
+YellowColor='\033[33m'  #黄色
+TealColor='\033[36m'    #湖蓝色
+WhiteColor='\033[37m'  #白色
+
+## 打印日志
+log_info() { echo "${WhiteColor} [INFO] $1"; } # 输出普通信息
+log_warn() { echo  "${YellowColor} [WARN] $1${WhiteColor}"; } # 输出警告信息
+log_success() { echo "${GreenColor} [SUCCESS] $1${WhiteColor}"; } # 输出成功信息
+log_error() { echo "${RedColor} [ERROR] ❌ $1${WhiteColor}"; } # 输出错误信息
+
+error() { log_error "$1";  exit 1; }
+
+log_section() {
+    echo "${TealColor}================================================================${WhiteColor}"
+    echo "${TealColor}             $1 "
+    echo "${TealColor}================================================================${WhiteColor}"
+}
+
+log_step() {
+    echo "\n${TealColor}##########  $1 ${WhiteColor}"
+}
+
+## 获取交互结果
+confirm() {
+    echo "${RedColor}[Confirm] $1"
+    validAns=0
+    while [ $validAns = 0 ]
+    do
+        read coverPush
+        case ${coverPush} in
+        y|Y)
+            validAns=1
+            return "1"
+            ;;
+        n|N)
+            validAns=1
+            return "0"
+            ;;
+        *)
+            echo "输入不合法，请重新输入[y/n]"
+            ;;
+        esac
+    done
+
+}
+
+## 检查依赖
+check_dependencies() {
+    exist_yaml=$(gem list --local | grep yaml)
+    if [ "$exist_yaml"x == ""x ]; then
+        log_info "yaml: ❌ Will run `gem install yaml`"
+        gem install yaml
+    else
+        log_info "yaml: ✅"
+    fi
+}
+##################### 脚本入口 ##########################
+
+log_section "自动配置CodeLint Target"
+
+SRCROOT="$( cd "$( dirname "$0"  )" && pwd  )"
+
+# 检查运行依赖
+log_step "检查运行依赖"
+check_dependencies
+
+# 检查ruby脚本
+ruby_script_path=$(find "${SRCROOT}" -d -mindepth 1 \( -name "${ruby_script_name}" \) -print0)
+
+if [[ -f $ruby_script_path ]]; then
+    log_step "调用脚本：${ruby_script_name}"
+    ruby $ruby_script_path
+else
+    error "${SRCROOT}/$ruby_script_name 不存在"
+fi
+
+

@@ -1,0 +1,10 @@
+xcodeproj: "../../RVSDK.xcodeproj" # relative path of xcodeproj
+
+target: "RVSDK" # target to lint
+
+tools:
+    OCLint: 1       # set 1 to use OCLint
+    SwiftLint: 1    # set 1 to use SwiftLint
+
+reporter: "html" # reporter type (xcode, html)
+
